@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<?php 
+        include('template/head.php'); 
+        include('config/connect.php');
+	?>
+
+	<title>WStaging Client Manager</title>
+</head>
+
+<?php //PHP Block to preset POST when it's empty
+	$filename = 'query';
+	if(!isset($_POST['companyname'])) {$_POST['companyname'] = '';}
+	if(!isset($_POST['firstname'])) {$_POST['firstname'] = '';}
+	if(!isset($_POST['lastname'])) {$_POST['lastname'] = '';}
+	if(!isset($_POST['city'])) {$_POST['city'] = '';}
+	if(!isset($_POST['cell'])) {$_POST['cell'] = '';}
+	if(!isset($_POST['email'])) {$_POST['email'] = '';}
+	if(!isset($_POST['followup'])) {$_POST['followup'] = '';}
+?>
+
+<body>
+	<div class="container">
+    	<!-- nav bar -->
+		<?php include('template/nav.php'); ?> 
+		
+        <!-- Search Section Starts from Here -->
+		<form action="query.php" method="post">
+			<div class="row">
+				<div class="col-md-3">
+					First Name: <input class="form-control" id="firstname"
+					name="firstname" type="text" value=
+					"<?php echo $_POST['firstname']; ?>"><br>
+					Last Name: <input class="form-control" name="lastname"
+					type="text" value="<?php echo $_POST['lastname']; ?>"><br>
+					Company Name: <input class="form-control" name=
+					"companyname" type="text" value=
+					"<?php echo $_POST['companyname']; ?>"><br>
+				</div>
+
+				<div class="col-md-3">
+					Cell: <input class="form-control" name="cell" type="text"
+					value="<?php echo $_POST['cell']; ?>"><br>
+					Email <input class="form-control" name="email" type="text"
+					value="<?php echo $_POST['email']; ?>"><br>
+					City: <input class="form-control" name="city" type="text"
+					value="<?php echo $_POST['city']; ?>"><br>
+				</div>
+
+				<div class="col-md-3">
+					Followup <input class="form-control" name="followup" type=
+					"text" value="<?php echo $_POST['followup']; ?>"><br>
+				</div>
+
+				<div class="col-md-3">
+					<button class="btn btn-success" name="search" type="submit">Search</button>
+				</div>
+                
+			</div><!-- end row -->
+		</form>
+
+		<!-- PHP Block to Query out Searched Record -->
+		<?php 
+            if(isset($_POST['search'])) {
+                
+                $companyname = $_POST['companyname'];
+                $firstname = $_POST['firstname'];
+                $lastname = $_POST['lastname'];
+                $city = $_POST['city'];
+                $cell = $_POST['cell'];
+                $email = $_POST['email'];
+                $followup = $_POST['followup'];
+                    
+                $query = "
+                SELECT companyname, firstname, lastname, city, cell, email, followup
+                FROM `contact`
+                WHERE 
+                UPPER(`companyname`) LIKE UPPER('%{$companyname}%') AND
+                UPPER(`firstname`) LIKE UPPER('%{$firstname}%') AND
+                UPPER(`lastname`) LIKE UPPER('%{$lastname}%') AND
+                UPPER(`city`) LIKE UPPER('%{$city}%') AND
+                UPPER(`cell`) LIKE UPPER('%{$cell}%') AND
+                UPPER(`email`) LIKE UPPER('%{$email}%') AND
+                UPPER(`followup`) LIKE UPPER('%{$followup}%')
+                
+                ";
+						
+				$result = mysqli_query($dbc, $query);
+						
+				echo '
+                	<div class="row">
+                		<table class="table table-condensed">';
+					echo '
+                        <tr class="active">
+                            <th>Name</th>
+                            <th>Company Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Followup</th>
+                            <th>Status</th>
+                        </tr>
+                        ';
+						
+					while ($row = mysqli_fetch_array($result))  {
+							
+						$id = $row['id'];
+							
+							echo '<tr>';
+								
+                            echo '<td><a href="view.php?id='.$id.'">'.$row['firstname'].'&nbsp;'. $row['lastname'].'</a></td>';
+                            echo '<td>'.$row['companyname'].'</td>';
+                            echo '<td>'.$row['email'].'</td>';
+                            echo '<td>'.$row['cell'].'</td>';
+                            echo '<td>'.$row['followup'].'</td>';
+
+                            if($row['status'] == 0) {echo '<td><button class="btn btn-xs btn-danger">Inactive</button></td>';} 
+                            if($row['status'] == 1) {echo '<td><button class="btn btn-xs btn-success">Active</button></td>';} 
+
+							echo '</tr>';
+							
+						}
+						
+						echo '</table>';
+					}
+					
+				?>
+		</div><!-- end row -->
+	</div><!-- end container -->
+</body>
+</html>
